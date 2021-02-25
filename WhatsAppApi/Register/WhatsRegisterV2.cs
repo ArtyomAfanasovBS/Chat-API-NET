@@ -38,12 +38,18 @@ namespace WhatsAppApi.Register
             return RequestCode(phoneNumber, out password, out request, out response, method, id);
         }
 
+        private static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
         public static bool RequestCode(string phoneNumber, out string password, out string request, out string response, string method = "sms", string id = null)
         {
             response = null;
             password = null;
             request = null;
-            var release = 0.ToString();
+            var release_code = 0.ToString();
             try
             {
                 if (string.IsNullOrEmpty(id))
@@ -60,13 +66,8 @@ namespace WhatsAppApi.Register
                 QueryStringParameters.Add("in", pn.Number);
                 QueryStringParameters.Add("lg", pn.ISO639);
                 QueryStringParameters.Add("lc", pn.ISO3166);
-                QueryStringParameters.Add("mcc", pn.MCC);
-                QueryStringParameters.Add("mnc", pn.MNC);
-                QueryStringParameters.Add("sim_mcc", pn.MCC);
-                QueryStringParameters.Add("sim_mnc", pn.MNC);
-                QueryStringParameters.Add("method", method);
-                QueryStringParameters.Add("reason", string.Empty);
-                QueryStringParameters.Add("token", token);
+
+                QueryStringParameters.Add("mistyped", "6");
 
                 // authkey -- это публичный ключ от client_static_keypair.
                 /*
@@ -90,12 +91,29 @@ namespace WhatsAppApi.Register
                 QueryStringParameters.Add("e_skey_id", );
                 QueryStringParameters.Add("e_skey_val", );
                 QueryStringParameters.Add("e_skey_sig", );
+
+                QueryStringParameters.Add("fdid", Helper.Func.random_uuid());
+                
+                // Тут сразу строка возвращается.
+                // expid have to encode it in base64
+                QueryStringParameters.Add("expid", Base64Encode(Helper.Func.random_uuid()));
+
                 QueryStringParameters.Add("network_radio_type", "1");
                 QueryStringParameters.Add("simnum", "1");
                 QueryStringParameters.Add("hasinrc", "1");
                 QueryStringParameters.Add("pid", new Random().Next(100, 9999).ToString());
-                QueryStringParameters.Add("rc", release);
+                QueryStringParameters.Add("rc", release_code);
                 QueryStringParameters.Add("id", id);
+
+                QueryStringParameters.Add("mcc", pn.MCC);
+                QueryStringParameters.Add("mnc", pn.MNC);
+                QueryStringParameters.Add("sim_mcc", pn.MCC);
+                QueryStringParameters.Add("sim_mnc", pn.MNC);
+                QueryStringParameters.Add("method", method);
+                QueryStringParameters.Add("reason", string.Empty);
+                QueryStringParameters.Add("token", token);
+
+                QueryStringParameters.Add("hasav", "1");
 
                 // Old:
                 /*QueryStringParameters.Add("mistyped", "6");
@@ -108,8 +126,13 @@ namespace WhatsAppApi.Register
                 QueryStringParameters.Add("extstate", "1");
                 */
 
+                /*
+                 * yowsap's:
+                   self.addParam("fdid", config.fdid)
+                   self.addParam("expid", self.b64encode(config.expid))
+                 */
 
-
+                dont forget about base64 encpding;
 
                 NameValueCollection RequestHttpHeaders = new NameValueCollection();
                 RequestHttpHeaders.Add("User-Agent", WhatsConstants.UserAgent);
