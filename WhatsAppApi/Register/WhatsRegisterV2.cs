@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using WhatsAppApi.Parser;
 using WhatsAppApi.Settings;
+using libaxolotl.util;
 
 namespace WhatsAppApi.Register
 {
@@ -42,6 +43,7 @@ namespace WhatsAppApi.Register
             response = null;
             password = null;
             request = null;
+            var release = 0.ToString();
             try
             {
                 if (string.IsNullOrEmpty(id))
@@ -58,25 +60,56 @@ namespace WhatsAppApi.Register
                 QueryStringParameters.Add("in", pn.Number);
                 QueryStringParameters.Add("lg", pn.ISO639);
                 QueryStringParameters.Add("lc", pn.ISO3166);
-                QueryStringParameters.Add("id", id);
-                QueryStringParameters.Add("token", token);
-                QueryStringParameters.Add("mistyped", "6");
-                QueryStringParameters.Add("network_radio_type", "1");
-                QueryStringParameters.Add("simnum", "1");
-                QueryStringParameters.Add("s", "");
-                QueryStringParameters.Add("copiedrc", "1");
-                QueryStringParameters.Add("hasinrc", "1");
-                QueryStringParameters.Add("rcmatch", "1");
-                QueryStringParameters.Add("pid", new Random().Next(100, 9999).ToString());
-                QueryStringParameters.Add("rchash", BitConverter.ToString(HashAlgorithm.Create("sha256").ComputeHash(sha256bytes)));
-                QueryStringParameters.Add("anhash", BitConverter.ToString(HashAlgorithm.Create("md5").ComputeHash(sha256bytes)));
-                QueryStringParameters.Add("extexist", "1");
-                QueryStringParameters.Add("extstate", "1");
                 QueryStringParameters.Add("mcc", pn.MCC);
                 QueryStringParameters.Add("mnc", pn.MNC);
                 QueryStringParameters.Add("sim_mcc", pn.MCC);
                 QueryStringParameters.Add("sim_mnc", pn.MNC);
                 QueryStringParameters.Add("method", method);
+                QueryStringParameters.Add("reason", string.Empty);
+                QueryStringParameters.Add("token", token);
+
+                // authkey -- это публичный ключ от client_static_keypair.
+                /*
+                 * self.addParam("authkey", self.b64encode(config.client_static_keypair.public.data))
+                 *         if config.client_static_keypair is None:
+                                config.client_static_keypair = WATools.generateKeyPair()
+                
+                from consonance.structs.keypair import KeyPair
+                 * @classmethod
+                   def generateKeyPair(cls):
+                   """
+                   :return:
+                   :rtype: KeyPair
+                   """
+                   return KeyPair.generate()
+                 */
+                QueryStringParameters.Add("authkey", libaxolotl.util.KeyHelper.generateIdentityKeyPair().getPublicKey().ToString());
+                QueryStringParameters.Add("e_regid", );
+                QueryStringParameters.Add("e_keytype", );
+                QueryStringParameters.Add("e_ident", );
+                QueryStringParameters.Add("e_skey_id", );
+                QueryStringParameters.Add("e_skey_val", );
+                QueryStringParameters.Add("e_skey_sig", );
+                QueryStringParameters.Add("network_radio_type", "1");
+                QueryStringParameters.Add("simnum", "1");
+                QueryStringParameters.Add("hasinrc", "1");
+                QueryStringParameters.Add("pid", new Random().Next(100, 9999).ToString());
+                QueryStringParameters.Add("rc", release);
+                QueryStringParameters.Add("id", id);
+
+                // Old:
+                /*QueryStringParameters.Add("mistyped", "6");
+                QueryStringParameters.Add("s", "");
+                QueryStringParameters.Add("copiedrc", "1");
+                QueryStringParameters.Add("rcmatch", "1");
+                QueryStringParameters.Add("rchash", BitConverter.ToString(HashAlgorithm.Create("sha256").ComputeHash(sha256bytes)));
+                QueryStringParameters.Add("anhash", BitConverter.ToString(HashAlgorithm.Create("md5").ComputeHash(sha256bytes)));
+                QueryStringParameters.Add("extexist", "1");
+                QueryStringParameters.Add("extstate", "1");
+                */
+
+
+
 
                 NameValueCollection RequestHttpHeaders = new NameValueCollection();
                 RequestHttpHeaders.Add("User-Agent", WhatsConstants.UserAgent);
